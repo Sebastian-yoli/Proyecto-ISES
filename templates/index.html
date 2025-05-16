@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultador de Pólizas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='Diseño.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Consulta de Coordenadas</h1>
+    </header>
+    <div class="page">
+        <div class="menu">
+            <form method="POST" action="/buscar">
+                <div class="panel_de_busqueda">
+                    <label for="poliza">Ingresar póliza</label>
+                    <input type="text" name="poliza" id="poliza"class="border border-gray-300 rounded px-4 py-2 w-full" placeholder="Ingrese número de póliza" value="{{ request.form.poliza if buscado else '' }}">
+
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Buscar</button>
+                    <a class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" href="https://www.google.com/maps/@10.4071168,-75.5171328,14z?entry=ttu&g_ep=EgoyMDI1MDQyMy4wIKXMDSoASAFQAw%3D%3D" style="text-align:center;"> Consultar coordenadas</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="content">
+            {% if buscado %}
+                {% if resultado %}
+                    <h2>Resultado</h2>
+                    <ul>
+                        {% for clave, valor in resultado.items() %}
+                            {% if clave != "_id" and clave != "IMAGENES" %}
+                                <li>
+                                    <strong>{{ clave }}:</strong> {{ valor }}
+                                    {% if clave == "COORDENADAS" %}
+                                        <button onclick="copiarCoordenada('{{ valor }}')" class="copiarBtn">Copiar</button>
+                                        <button onclick="obtenerUbicacionActual('{{ valor }}')" class="ActualizarBtn">Actualizar Coordenada</button>
+                                    {% endif %}
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+
+                    <!-- Formulario de carga de imagen (aparece solo si se encontró la póliza) -->
+                    <form action="/cargar" method="POST" enctype="multipart/form-data" class="mt-4">
+                        <input type="hidden" name="poliza" value="{{ resultado.POLIZA }}">
+
+                        <label for="foto" class="block mt-2">Subir Imagen:</label>
+                        <input type="file" name="fotos" id="foto" accept="image/*" multiple required class="border p-2 rounded">
+
+                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded mt-2">Subir Imagen</button>
+                    </form>
+
+                {% else %}
+                    <p>No se encontró ninguna póliza con ese número.</p>
+                {% endif %}
+            {% endif %}
+
+            {% if resultado.IMAGENES %}
+                <h3 class="mt-6 text-lg font-semibold">Imágenes Cargadas</h3>
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                {% for img_url in resultado.IMAGENES %}
+                    <div class="rounded overflow-hidden shadow" style="width: 100%; height: 30vh; "> 
+                    <img src="{{ img_url }}"alt="Imagen póliza {{ resultado.POLIZA }}" style="width: 100%; height: 100%; object-fit: contain; ">
+                </div>
+                {% endfor %}
+         </div>
+        {% else %}
+            <p class="mt-4">No hay imagen disponible para esta póliza.</p>
+        {% endif %}
+
+        </div>
+       
+           
+        
+    </div>
+    <footer>
+        <p>👌 Consultador de Pólizas</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='Index.js') }}"></script>
+</body>
+</html>
